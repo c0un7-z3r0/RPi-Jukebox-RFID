@@ -271,6 +271,7 @@ class PlayerMPD:
         except KeyError:
             pass
         publishing.get_publisher().send('playerstatus', self.mpd_status)
+        components.player.on_player_status_change_callback._run_callbacks(self.mpd_status)
 
     @plugs.tag
     def get_player_type_and_version(self):
