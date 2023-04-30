@@ -2,8 +2,8 @@ import os
 import re
 import logging
 import jukebox.cfghandler
-from typing import Optional
-
+from jukebox.callingback import CallbackHandler
+from typing import (List, Optional, Callable)
 
 logger = logging.getLogger('jb.player')
 cfg = jukebox.cfghandler.get_handler('jukebox')
@@ -53,3 +53,31 @@ def get_music_library_path():
     if _MUSIC_LIBRARY_PATH is None:
         _MUSIC_LIBRARY_PATH = MusicLibPath()
     return _MUSIC_LIBRARY_PATH.music_library_path
+
+class PlayerStatusCallbackHandler(CallbackHandler):
+    """
+    Callbacks are executed when
+        * new player status is published
+    """
+
+    def register(self, func: Callable[[int, bool, bool], None]):
+        """
+        Add a new callback function :attr:`func`.
+
+        Callback signature is
+
+        .. py:function:: func(volume: int, is_min: bool, is_max: bool)
+            :noindex:
+
+            :param volume: Volume level
+            :param is_min: 1, if volume level is minimum, else 0
+            :param is_max: 1, if volume level is maximum, else 0
+        """
+        super().register(func)
+
+    def run_callbacks(self, sink_name, alias, sink_index, error_state):
+        """:meta private:"""
+        super().run_callbacks(sink_name, alias, sink_index, error_state)
+
+
+on_player_status_change_callback = PlayerStatusCallbackHandler('on_player_status_change_callback', logger)
